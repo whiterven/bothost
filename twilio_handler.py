@@ -1,3 +1,4 @@
+# twilio_handler.py
 import os
 import logging
 import time
@@ -6,6 +7,9 @@ from twilio.rest import Client
 from twilio.twiml.voice_response import VoiceResponse
 import phonenumbers
 from urllib.parse import urlparse
+
+# ADD THESE LINES
+logging.getLogger("twilio").setLevel(logging.WARNING)
 
 class TwilioHandler:
     def __init__(self, bot, call_utils):
@@ -187,9 +191,11 @@ class TwilioHandler:
             if redis_client:
                 redis_client.close()
 
-    def handle_verification_accept(self, call):
-        chat_id = call.message.chat.id
-        call_sid = call.data.split("_")[2]
+    def handle_verification_accept(self, callback_query):
+        chat_id = callback_query.message.chat.id
+        message_id = callback_query.message.message_id
+        call_sid = callback_query.data.split("_")[2]
+        
         try:
             call = self.client.calls(call_sid).update(
                 twiml='<Response><Say voice="Polly.Joanna">Thank you for verifying your identity. Goodbye.</Say><Hangup/></Response>'
@@ -197,7 +203,7 @@ class TwilioHandler:
             self.bot.edit_message_text(
                 "✅ Verification accepted. Call completed.",
                 chat_id=chat_id,
-                message_id=call.message.message_id
+                message_id=message_id
             )
         except Exception as e:
             self.bot.send_message(chat_id, f"❌ Error accepting verification: {str(e)}")
