@@ -1,0 +1,9 @@
+pyTelegramBotAPI
+twilio
+phonenumbers
+python-dotenv
+redis
+Flask
+telebot
+gunicorn
+paste
