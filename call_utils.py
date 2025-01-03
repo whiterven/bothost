@@ -1,3 +1,4 @@
+#call_utils.py
 import telebot
 
 class CallUtils:
@@ -8,7 +9,7 @@ class CallUtils:
     "BMO Harris", "Fifth Third Bank", "Huntington", "Ally Bank", "Wells Fargo",
     "PNC Bank", "Capital One", "First Citizens", "M&T Bank", "American Express", "Paypal", "Coinbase"
 ]
-        self.BANKS_PER_PAGE = 8
+        self.BANKS_PER_PAGE = 5
         self.status_emojis = {
             'queued': '⏳', 'ringing': '🔔', 'in-progress': '📞',
             'completed': '✅', 'busy': '⏰', 'failed': '❌',
