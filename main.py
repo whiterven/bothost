@@ -71,9 +71,9 @@ def send_welcome(message):
         "• Secure voice call verification\n"
         "• Real-time call status updates\n"
         "• Automatic OTP collection\n"
-        "• *Please send code when you are prompted‼️*\n\n"
-        "• Ability to request for new code by *declining❌* the code obtained *ONLY* if it's incorrect.\n\n"
-        "• For more info read our *HELP*"
+        "• *Please send code when you are prompted‼️*\n"
+        "• Ability to request for new code by *declining❌* the code obtained *ONLY* if it's incorrect.\n"
+        "• For more info read our *HELP*\n\n"
         "Select an option to begin:"
     )
     bot.send_message(
