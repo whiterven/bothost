@@ -1,4 +1,5 @@
 #call_utils.py
+#call_utils.py
 import telebot
 
 class CallUtils:
@@ -184,11 +185,11 @@ class CallUtils:
                 "7️⃣ If the *CODE* is displayed, please quickly enter it to confirm, once it works choose *ACCEPT✅* to end the call, if the code is incorrect, choose *DECLINE❌* to request for a new code.\n\n"
                 "8️⃣ Always call the number to mae sure user answers to avoid *voicemails*, when your call is answered by a real person, hangup and call using the BOT in 2-3mins later.\n\n"
                 "Subscriptions:\n\n"
-                “🍀$66 daily - *save 45%*\n”
-                “🍀$166 3 days - *save 53.9%*\n”
-                “🍀$236 1 week - *save 71.9%*\n”
-                “🍀$414 2 weeks- *save 75.4%*\n”
-                “🍀$700 1 Month- *save 80.6%*\n\n”
+                "🍀$66 daily - *save 45%*\n"
+                "🍀$166 3 days - *save 53.9%*\n"
+                "🍀$236 1 week - *save 71.9%*\n"
+                "🍀$414 2 weeks- *save 75.4%*\n"
+                "🍀$700 1 Month- *save 80.6%*\n\n"
                 "💫 Thank you for using our service 😊.\n\n"
                 "📞 *Call Status Icons:*\n"
                 "🔔 Ringing\n"
