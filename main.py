@@ -1,5 +1,4 @@
 #main.py
-#main.py
 import os
 import logging
 import sys
@@ -67,12 +66,14 @@ user_states = {}
 def send_welcome(message):
     welcome_text = (
         "🎯 Welcome to *OneCaller*!\n\n"
-        "I can help you verify phone numbers through voice calls.\n\n"
         "🏦 This service is designed to enhance account security by delivering OTP codes via a secure voice call\n\n"
         "📱 Features:\n"
         "• Secure voice call verification\n"
         "• Real-time call status updates\n"
-        "• Automatic OTP collection\n\n"
+        "• Automatic OTP collection\n"
+        "• *Please send code when you are prompted‼️*\n\n"
+        "• Ability to request for new code by *declining❌* the code obtained *ONLY* if it's incorrect.\n\n"
+        "• For more info read our *HELP*"
         "Select an option to begin:"
     )
     bot.send_message(
@@ -102,6 +103,7 @@ def handle_callback_query(call):
         bot.answer_callback_query(call.id)
         bot.send_message(
             chat_id,
+            "• Please try to add atleast $1 to the amount.\n\n"
             "💎 Choose a subscription plan:",
             reply_markup=payment_handler.create_subscription_keyboard()
         )
