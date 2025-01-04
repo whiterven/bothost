@@ -1,4 +1,5 @@
 #main.py
+#main.py
 import os
 import logging
 import sys
@@ -106,7 +107,7 @@ def handle_callback_query(call):
         )
     elif call.data.startswith("verify_") or call.data.startswith("hangup_") or call.data.startswith("cancel_call_"):
         twilio_handler.handle_call_callbacks(call)
-    elif call.data.startswith("bank_") or call.data.startswith("banks_page_"):
+    elif call.data.startswith("bank_") or call.data.startswith("banks_page_") or call.data == "custom_bank":
         call_utils.handle_bank_selection(call, bot, user_states)
     elif call.data in ["help", "status"]:
         call_utils.handle_utility_callbacks(call, bot)
@@ -123,6 +124,12 @@ def handle_messages(message):
         )
         return
 
+    # Add this block for custom bank handling
+    if isinstance(user_states[chat_id], dict) and user_states[chat_id].get("state") == "awaiting_custom_bank":
+        if call_utils.handle_message(message, bot, user_states):
+            return
+
+    # Rest of your original handle_messages function remains exactly the same
     if user_states[chat_id] == "awaiting_recipient_name":
         user_states[chat_id] = {"state": "awaiting_bank", "recipient_name": message.text.strip()}
         bot.send_message(chat_id, "🏦 Select the banking institution:", reply_markup=call_utils.create_bank_keyboard())
