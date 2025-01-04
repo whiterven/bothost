@@ -49,3 +49,5 @@ Monitor logs:
 
 bashCopysudo journalctl -u telegram-bot -f
 Optional: Set up CloudWatch for monitoring and alerts on service failures.
+
+sudo systemctl restart telegram-bot
