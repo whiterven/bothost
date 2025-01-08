@@ -202,7 +202,7 @@ class PaymentHandler:
                         self.bot.send_message(
                             chat_id,
                             "🎉 Your subscription has been activated!\n"
-                            "You can now use all OneCaller features."
+                            "You can now use all OneCaller features until your subscription runs out!"
                         )
 
         except Exception as e:
@@ -266,7 +266,7 @@ class PaymentHandler:
                 callback.message.chat.id,
                 "🔒 *Subscription Required*\n\n"
                 "You need an active subscription to make calls.\n"
-                "Choose a subscription plan:",
+                "Choose a subscription *plan*:",
                 parse_mode="Markdown",
                 reply_markup=self.create_subscription_keyboard()
             )
