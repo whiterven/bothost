@@ -21,7 +21,7 @@ class PaymentHandler:
         self.redis_client = self._create_redis_client()
         
         self.subscription_tiers = {
-            'hour': {'duration': 1/24, 'price': 12, 'name': '1 Hour'},
+            'hour': {'duration': 1/24, 'price': 15, 'name': '1 Hour'},
             'day': {'duration': 1, 'price': 66, 'name': '1 Day'},
             'three_days': {'duration': 3, 'price': 166, 'name': '3 Days'},
             'week': {'duration': 7, 'price': 236, 'name': '1 Week'},
